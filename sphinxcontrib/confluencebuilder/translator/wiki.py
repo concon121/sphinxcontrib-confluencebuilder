@@ -32,6 +32,7 @@ SPECIAL_VALUE_REPLACEMENTS = {
     ('>', '&gt;')
 }
 
+
 class ConfluenceWikiTranslator(ConfluenceTranslator):
     docparent = ''
 
@@ -42,7 +43,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
         assert builder.current_docname
         self.docname = builder.current_docname
         if SEP in self.docname:
-            self.docparent = self.docname[0:self.docname.rfind(SEP)+1]
+            self.docparent = self.docname[0:self.docname.rfind(SEP) + 1]
 
         if not 'anchor' in builder.config.confluence_adv_restricted_macros:
             self.can_anchor = True
@@ -109,31 +110,31 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
 
     def depart_document(self, node):
         self.end_state()
-        self.body = "";
+        self.body = ""
 
         if self.builder.config.confluence_header_file is not None:
             headerFile = path.join(self.builder.env.srcdir,
-                self.builder.config.confluence_header_file)
+                                   self.builder.config.confluence_header_file)
             try:
                 with io.open(headerFile, encoding='utf-8') as file:
                     self.body += file.read() + self.nl
             except (IOError, OSError) as err:
                 ConfluenceLogger.warn("error reading file "
-                    "%s: %s" % (headerFile, err))
+                                      "%s: %s" % (headerFile, err))
 
-        self.body += self.nl.join(line and (' '*indent + line)
-                                 for indent, lines in self.states[0]
-                                 for line in lines)
+        self.body += self.nl.join(line and (' ' * indent + line)
+                                  for indent, lines in self.states[0]
+                                  for line in lines)
 
         if self.builder.config.confluence_footer_file is not None:
             footerFile = path.join(self.builder.env.srcdir,
-                self.builder.config.confluence_footer_file)
+                                   self.builder.config.confluence_footer_file)
             try:
                 with io.open(footerFile, encoding='utf-8') as file:
                     self.body += file.read() + self.nl
             except (IOError, OSError) as err:
                 ConfluenceLogger.warn("error reading file "
-                    "%s: %s" % (footerFile, err))
+                                      "%s: %s" % (footerFile, err))
 
     def visit_highlightlang(self, node):
         raise nodes.SkipNode
@@ -178,7 +179,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
 
     def visit_title(self, node):
         if isinstance(node.parent, nodes.Admonition):
-            self.add_text(node.astext()+': ')
+            self.add_text(node.astext() + ': ')
             raise nodes.SkipNode
         self.new_state(0)
 
@@ -210,16 +211,20 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
         self.end_state()
 
     def visit_desc_signature(self, node):
-        if node.parent['objtype'] in ('class', 'exception', 'method', 'function'):
-            self.add_text('**')
+        if node.parent['objtype'] in ('exception', 'method', 'function'):
+            self.add_text('*')
+        elif node.parent['objtype'] in ('class'):
+            self.add_text('h3. ')
         else:
-            self.add_text('``')
+            self.add_text('_')
 
     def depart_desc_signature(self, node):
-        if node.parent['objtype'] in ('class', 'exception', 'method', 'function'):
-            self.add_text('**')
+        if node.parent['objtype'] in ('exception', 'method', 'function'):
+            self.add_text('*')
+        elif node.parent['objtype'] in ('class'):
+            self.add_text('')
         else:
-            self.add_text('``')
+            self.add_text('_')
 
     def visit_desc_name(self, node):
         pass
@@ -269,7 +274,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
     def visit_desc_annotation(self, node):
         content = node.astext()
         if len(content) > MAXWIDTH:
-            h = int(MAXWIDTH/3)
+            h = int(MAXWIDTH / 3)
             content = content[:h] + " ... " + content[-h:]
             self.add_text(content)
             raise nodes.SkipNode
@@ -312,7 +317,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
                 self.add_text(production['tokenname'].ljust(maxlen) + ' ::=')
                 lastname = production['tokenname']
             else:
-                self.add_text('%s    ' % (' '*len(lastname)))
+                self.add_text('%s    ' % (' ' * len(lastname)))
             self.add_text(production.astext() + self.nl)
         self.end_state()
         raise nodes.SkipNode
@@ -440,7 +445,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
                                       'not implemented.')
 
         self.add_text(self._table_sep)
-        if node.astext() == '': # (empty cell)
+        if node.astext() == '':  # (empty cell)
             self.add_text(' ')
             raise nodes.SkipNode
 
@@ -580,7 +585,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
     def depart_field_name(self, node):
         self.add_text(':')
         content = node.astext()
-        self.add_text((16-len(content))*' ')
+        self.add_text((16 - len(content)) * ' ')
 
     def visit_field_body(self, node):
         self.new_state(self.indent)
@@ -668,7 +673,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
         else:
             self._vm_type = 'info'
             ConfluenceLogger.warn('unsupported version modification type: '
-                '%s' % node['type'])
+                                  '%s' % node['type'])
 
         self.add_text('{%s}' % self._vm_type)
 
@@ -682,9 +687,9 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
             lang = LITERAL2CODE_MAP[lang]
 
         if node.get('linenos', False) == True:
-            nums='true'
+            nums = 'true'
         else:
-            nums='false'
+            nums = 'false'
 
         self.add_text('{code:linenumbers=%s|language=%s}' % (nums, lang))
         self.add_text(self.nl)
@@ -734,13 +739,13 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
 
     def visit_paragraph(self, node):
         if not isinstance(node.parent, (
-                    nodes.Admonition,
-                    nodes.citation,
-                    nodes.entry,
-                    nodes.footnote,
-                    nodes.list_item,
-                    addnodes.seealso,
-                )):
+            nodes.Admonition,
+            nodes.citation,
+            nodes.entry,
+            nodes.footnote,
+            nodes.list_item,
+            addnodes.seealso,
+        )):
             self.new_state(0)
 
     def depart_paragraph(self, node):
@@ -748,12 +753,12 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
             self.add_text(self.nl)
 
         elif not isinstance(node.parent, (
-                    nodes.Admonition,
-                    nodes.citation,
-                    nodes.entry,
-                    nodes.footnote,
-                    addnodes.seealso,
-                )):
+            nodes.Admonition,
+            nodes.citation,
+            nodes.entry,
+            nodes.footnote,
+            addnodes.seealso,
+        )):
             self.end_state()
 
     def visit_target(self, node):
@@ -796,7 +801,7 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
             doctitle = ConfluenceDocMap.title(docname)
             if not doctitle:
                 ConfluenceLogger.warn("unable to build link to document due to "
-                    "missing title (in %s): %s" % (self.docname, docname))
+                                      "missing title (in %s): %s" % (self.docname, docname))
                 raise nodes.SkipNode
 
             if '#' in node['refuri']:
@@ -811,8 +816,8 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
                     anchor = '#' + target
                 else:
                     ConfluenceLogger.warn("unable to build link to document "
-                        "due to missing target (in "
-                        "%s): %s" % (self.docname, anchor))
+                                          "due to missing target (in "
+                                          "%s): %s" % (self.docname, anchor))
                     anchor = ''
             else:
                 anchor = ''
@@ -882,15 +887,16 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
         self.add_text('*')
 
     def visit_literal(self, node):
-        self.add_text('{{')
+        self.add_text('{{ ')
 
     def depart_literal(self, node):
-        self.add_text('}}')
+        self.add_text(' }}')
 
     def visit_subscript(self, node):
         self.add_text('_')
 
     def depart_subscript(self, node):
+        self.add_text('_')
         pass
 
     def visit_superscript(self, node):
@@ -923,8 +929,8 @@ class ConfluenceWikiTranslator(ConfluenceTranslator):
         if self.escape_newlines or not conf.confluence_adv_strict_line_breaks:
             s = s.replace(self.nl, ' ')
         remove_chars = [
-            '[', ']' # Escaped brackets have issues with older Confluence/Wiki.
-            ]
+            '[', ']'  # Escaped brackets have issues with older Confluence/Wiki.
+        ]
         for char in remove_chars:
             s = s.replace(char, '')
         for find, encoded in SPECIAL_VALUE_REPLACEMENTS:

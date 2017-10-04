@@ -24,6 +24,8 @@ import io
 # Clone of relative_uri() sphinx.util.osutil, with bug-fixes
 # since the original code had a few errors.
 # This was fixed in Sphinx 1.2b.
+
+
 def relative_uri(base, to):
     """Return a relative URL from ``base`` to ``to``."""
     if to.startswith(SEP):
@@ -44,7 +46,8 @@ def relative_uri(base, to):
         # Special case: relative_uri('f/index.html','f/') should
         # return './', not ''
         return '.' + SEP
-    return ('..' + SEP) * (len(b2)-1) + SEP.join(t2)
+    return ('..' + SEP) * (len(b2) - 1) + SEP.join(t2)
+
 
 class ConfluenceBuilder(Builder):
     current_docname = None
@@ -90,23 +93,23 @@ class ConfluenceBuilder(Builder):
         if self.config.confluence_publish:
             if not self.config.confluence_server_url:
                 raise ConfluenceConfigurationError("""Confluence server URL """
-                    """has not been set. Unable to publish.""")
+                                                   """has not been set. Unable to publish.""")
             if not self.config.confluence_space_name:
                 raise ConfluenceConfigurationError("""Confluence space key """
-                    """has not been set. Unable to publish.""")
+                                                   """has not been set. Unable to publish.""")
             if not self.config.confluence_server_user:
                 if self.config.confluence_server_pass:
                     raise ConfluenceConfigurationError("""Confluence """
-                        """username has not been set even though a password """
-                        """has been set. Unable to publish.""")
+                                                       """username has not been set even though a password """
+                                                       """has been set. Unable to publish.""")
             if self.config.master_doc:
                 if not self.config.confluence_master_homepage:
                     ConfluenceLogger.verbose("master_doc value ignored")
             else:
                 if self.config.confluence_master_homepage:
                     raise ConfluenceConfigurationError("""Confluence """
-                        """master homepage option is set, but no master is """
-                        """defined in documentation. Unable to publish.""")
+                                                       """master homepage option is set, but no master is """
+                                                       """defined in documentation. Unable to publish.""")
 
             self.publish = True
             self.publisher.connect()
@@ -135,7 +138,7 @@ class ConfluenceBuilder(Builder):
             sourcename = path.join(self.env.srcdir, docname +
                                    self.file_suffix)
             targetname = path.join(self.outdir, self.file_transform(docname))
-            print (sourcename, targetname)
+            print(sourcename, targetname)
 
             try:
                 targetmtime = path.getmtime(targetname)
@@ -180,7 +183,7 @@ class ConfluenceBuilder(Builder):
                 continue
 
             doctitle = ConfluenceDocMap.registerTitle(doc, doctitle,
-                self.config.confluence_publish_prefix)
+                                                      self.config.confluence_publish_prefix)
 
             target_refs = []
             for node in doctree.traverse(nodes.target):
@@ -232,7 +235,7 @@ class ConfluenceBuilder(Builder):
                     file.write(self.writer.output)
             except (IOError, OSError) as err:
                 ConfluenceLogger.warn("error writing file "
-                    "%s: %s" % (outfilename, err))
+                                      "%s: %s" % (outfilename, err))
 
             if self.publish:
                 self.publish_doc(docname, self.writer.output)
@@ -241,10 +244,14 @@ class ConfluenceBuilder(Builder):
         title = ConfluenceDocMap.title(docname)
         if not title:
             ConfluenceLogger.warn("skipping document with no title: "
-                "%s" % docname)
+                                  "%s" % docname)
             return
 
         uploaded_id = self.publisher.storePage(title, output, self.parent_id)
+
+        if self.docname == 'index':
+            self.publisher.parent_name = title
+            self.parent_id = uploaded_id
 
         if self.config.master_doc == docname:
             self.master_doc_page_id = uploaded_id
@@ -263,7 +270,7 @@ class ConfluenceBuilder(Builder):
             if self.config.confluence_purge is True and self.legacy_pages:
                 ConfluenceLogger.info('removing legacy pages... ', nonl=0)
                 for legacy_page_id in self.legacy_pages:
-                   self.publisher.removePage(legacy_page_id)
+                    self.publisher.removePage(legacy_page_id)
                 ConfluenceLogger.info('done\n')
 
             self.publisher.disconnect()
